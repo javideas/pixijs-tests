@@ -1,0 +1,24 @@
+{
+  "name": "pixijs-tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npm run app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/javideas/pixijs-tests.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/javideas/pixijs-tests/issues"
+  },
+  "homepage": "https://github.com/javideas/pixijs-tests#readme",
+  "dependencies": {
+    "nodemon": "^2.0.20"
+  }
+}

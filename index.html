@@ -1,0 +1,214 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Make a sprite from a texture atlas</title>
+  </head>
+  <body>
+    <script src="./pixi/pixi.min.js"></script>
+    <script>
+      //Aliases
+      const Application = PIXI.Application,
+          Container = PIXI.Container,
+          loader = PIXI.Loader.shared,
+          resources = PIXI.Loader.shared.resources,
+          TextureCache = PIXI.utils.TextureCache,
+          sprite = PIXI.Sprite,
+          Rectangle = PIXI.Rectangle;
+
+      //Create a Pixi Application
+      const app = new Application({ 
+          width: 512, 
+          height: 512,                       
+          antialias: true, 
+          transparent: false, 
+          resolution: 1
+        }
+      );
+      function keyboard(value) {
+        const key = {};
+        key.value = value;
+        key.isDown = false;
+        key.isUp = true;
+        key.press = undefined;
+        key.release = undefined;
+        //The `downHandler`
+        key.downHandler = (event) => {
+          if (event.key === key.value) {
+            if (key.isUp && key.press) {
+              key.press();
+            }
+            key.isDown = true;
+            key.isUp = false;
+            event.preventDefault();
+          }
+        };
+
+        //The `upHandler`
+        key.upHandler = (event) => {
+          if (event.key === key.value) {
+            if (key.isDown && key.release) {
+              key.release();
+            }
+            key.isDown = false;
+            key.isUp = true;
+            event.preventDefault();
+          }
+        };
+
+        //Attach event listeners
+        const downListener = key.downHandler.bind(key);
+        const upListener = key.upHandler.bind(key);
+        
+        window.addEventListener("keydown", downListener, false);
+        window.addEventListener("keyup", upListener, false);
+        
+        // Detach event listeners
+        key.unsubscribe = () => {
+          window.removeEventListener("keydown", downListener);
+          window.removeEventListener("keyup", upListener);
+        };
+        
+        return key;
+      }
+      //Add the canvas that Pixi automatically created for you to the HTML document
+      document.body.appendChild(app.view);
+
+      const left = keyboard("ArrowLeft"),
+      up = keyboard("ArrowUp"),
+      right = keyboard("ArrowRight"),
+      down = keyboard("ArrowDown");
+    
+      //load a JSON file and run the `setup` function when it's done
+      loader
+        .add("./img/_Run.json")
+        .load(setup);
+
+      //Define variables that might be used in more 
+      //than one function
+      state = play;
+      let explorer;
+      let onlyOnce = true;
+      function setup() {
+        //2. Access the texture using throuhg the loader's `resources`:
+        explorer = new sprite(resources["./img/_Run.json"].textures["00.png"]);
+        explorer.x = 0;
+        explorer.y = app.screen.height/ 2;
+        let textureInterval = null;
+        app.stage.addChild(explorer);
+        let textureIndex = 0;
+        updateTexture();
+        const left = keyboard("ArrowLeft"),
+          up = keyboard("ArrowUp"),
+          right = keyboard("ArrowRight"),
+          down = keyboard("ArrowDown");
+
+        //Left arrow key `press` method
+        left.press = () => {
+          //Change the explorer's velocity when the key is pressed
+            explorer.vx = -5;
+            explorer.vy = 0;
+            explorer.scale.x = -1;
+            clearInterval(textureInterval);
+            textureInterval = setInterval(() => {
+              updateTexture();
+              textureIndex++;
+            }, 150);
+        };
+        //Left arrow key `release` method
+        left.release = () => {
+          //If the left arrow has been released, and the right arrow isn't down,
+          //and the explorer isn't moving vertically:
+          //Stop the explorer
+          if (!right.isDown && explorer.vy === 0) {
+            explorer.vx = 0;
+            clearInterval(textureInterval);
+          }
+          if(right.isDown) {
+            explorer.scale.x = 1;
+            explorer.vx = 5;
+          }
+        };
+        //Right
+        right.press = () => {
+            explorer.scale.x = 1;
+            explorer.vx = 5;
+            explorer.vy = 0;
+            clearInterval(textureInterval);
+            textureInterval = setInterval(() => {
+              updateTexture();
+              textureIndex++;
+            }, 150);
+        };
+        // clear the interval when the right button is release
+        right.release = () => {
+          if (!left.isDown && explorer.vy === 0) {
+            explorer.vx = 0;
+            clearInterval(textureInterval);
+          }
+          if(left.isDown) {
+            explorer.scale.x = -1;
+            explorer.vx = -5;
+          }
+        };
+        //Up
+        up.press = () => {
+          explorer.vy = -5;
+          explorer.vx = 0;
+        };
+        up.release = () => {
+          if (!down.isDown && explorer.vx === 0) {
+            explorer.vy = 0;
+          }
+        };
+
+        
+        // Add a new function that increments the textureIndex
+        // and updates the explorer's texture
+        function updateTexture() {
+          if (textureIndex === 9) {
+            textureIndex = 0;
+          } else {
+            textureIndex += 1;
+          }
+          console.log("initialized");
+          explorer.texture = resources["./img/_Run.json"].textures[`0${textureIndex}.png`];
+        }
+
+        
+
+        //Down
+        down.press = () => {
+          explorer.vy = 5;
+          explorer.vx = 0;
+        };
+        down.release = () => {
+          if (!up.isDown && explorer.vx === 0) {
+            explorer.vy = 0;
+          }
+        };
+
+        //Center the explorer vertically
+
+        explorer.vx = 0;
+        explorer.vy = 0;
+        //Set the game's current state to `play`
+        state = play;
+
+        //Start the game loop
+        app.ticker.add(delta => gameLoop(delta));
+      }
+      
+      function gameLoop(delta){
+        //Update the current game state:
+        state(delta);
+      }
+      
+      function play(delta) {
+        //Use the explorer's velocity to make it move
+        explorer.x += (explorer.vx * 0.1);
+        explorer.y += (explorer.vy * 0.1);
+      }
+    </script>
+  </body>
+  </html>

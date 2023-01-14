@@ -1,3 +1,8 @@
+PixiJs work in progress tests
+-
+Welcome to my notes.
+
+
 
 https://github.com/kittykatattack/learningPixi guide with 5.3.10
 https://github.com/ForkandBeard/Alferd-Spritesheet-Unpacker/releases Desktop Sprite Splite & Detection tool
